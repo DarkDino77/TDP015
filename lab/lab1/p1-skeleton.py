@@ -75,7 +75,12 @@ class Var(Exp):
 class Nega(Exp):
     """Logical not."""
 
-    # TODO: Complete this class
+    def __init__(self, sexp1):
+        super().__init__('¬', sexp1)
+
+    def value(self, assignment):
+            assert len(self.sexps) == 1
+            return not self.sexps[0].value(assignment)
 
 
 class Conj(Exp):
@@ -94,19 +99,43 @@ class Conj(Exp):
 class Disj(Exp):
     """Logical or."""
 
-    # TODO: Complete this class
+    def __init__(self, sexp1, sexp2):
+        super().__init__('∨', sexp1, sexp2)
+
+    def value(self, assignment):
+        assert len(self.sexps) == 2
+        return \
+            self.sexps[0].value(assignment) or \
+            self.sexps[1].value(assignment)
 
 
 class Impl(Exp):
     """Logical implication."""
 
-    # TODO: Complete this class
+    def __init__(self, sexp1, sexp2):
+        super().__init__('→', sexp1, sexp2)
+
+    def value(self, assignment):
+        assert len(self.sexps) == 2
+
+        if not self.sexps[0].value(assignment) or self.sexps[1].value(assignment):
+            return True
+        else:
+            return False
+
 
 
 class Equi(Exp):
     """Logical equivalence."""
 
-    # TODO: Complete this class
+    def __init__(self, sexp1, sexp2):
+        super().__init__('↔', sexp1, sexp2)
+
+    def value(self, assignment):
+        assert len(self.sexps) == 2
+
+        return  self.sexps[0].value(assignment) == self.sexps[1].value(assignment)
+
 
 
 def assignments(variables):
@@ -122,7 +151,11 @@ def assignments(variables):
 
         {'x': True, 'y': False}
     """
-    # TODO: Complete this function. Use the itertools module!
+
+    for values in itertools.product([True,False], repeat=len(variables)):
+        #print(dict(zip(variables,values)))
+        yield dict(zip(variables,values))
+    
 
 
 def satisfiable(exp):
@@ -140,8 +173,11 @@ def satisfiable(exp):
         A truth assignment is represented as a dictionary mapping variable
         names to truth values.
     """
-    # TODO: Complete this function
 
+    for assignment in assignments(exp.variables() ):
+        if exp.value(assignment):
+            return assignment
+    return False
 
 def tautology(exp):
     """Tests whether the specified expression is a tautology.
@@ -155,7 +191,8 @@ def tautology(exp):
     Returns:
         True if the specified expression is a tautology, False otherwise.
     """
-    # TODO: Complete this function
+
+    return all(exp.value(assignment)for assignment in assignments(exp.variables()))
 
 
 def equivalent(exp1, exp2):
@@ -171,7 +208,7 @@ def equivalent(exp1, exp2):
     Returns:
         True if the specified expressions are equivalent, False otherwise.
     """
-    # TODO: Complete this function
+    return all(exp1.value(assignment) == exp2.value(assignment) for assignment in assignments(exp1.variables() | exp2.variables()))
 
 
 def test1():
@@ -182,8 +219,105 @@ def test1():
     exp2 = Conj(Disj(a, c), Disj(Nega(b), c))
     return equivalent(exp1, exp2)
 
+def test2():
+    a = Var('a')
+    exp = Disj(a, Nega(a))
+    return tautology(exp)
+
+def test3():
+    p = Var('p')
+    q = Var('q')
+    exp = Equi(Nega(Conj(p, q)), Disj(Nega(p), Nega(q)))
+    return tautology(exp)
+
+def test4():
+    p = Var('p')
+    q = Var('q')
+    r = Var('r')
+    exp = Impl(Conj(Impl(q,r),Conj(Impl(p,r),Conj(p,q))),r)
+    return tautology(exp)
+
+def test5():
+    a = Var('a')
+    b = Var('b')
+    exp = Conj(a, b)
+    return tautology(exp)
+
+    
+def test6():
+    x = Var('x')
+    exp = Nega(Nega(x))
+    return equivalent(exp, x)
+
+def test7():
+    p = Var('p')
+    q = Var('q')
+    exp = Impl(p, q)
+    not_p_or_q = Disj(Nega(p), q)
+    return equivalent(exp, not_p_or_q)
+
+def test8():
+    x = Var('x')
+    y = Var('y')
+    exp = Disj(Conj(x, y), Conj(Nega(x), Nega(y)))
+    return satisfiable(exp)
+
+def test9():
+    a = Var('a')
+    exp = Nega(Nega(a))
+    return equivalent(a, exp)
+
+def test10():
+    p = Var('p')
+    not_p = Nega(p)
+    exp = Conj(p, not_p)
+    return satisfiable(exp)
+
+def test6_enhanced():
+    x = Var('x')
+    exp = Nega(Nega(Nega(Nega(x))))
+    return equivalent(exp, x)
+
+def test7_enhanced():
+    p = Var('p')
+    q = Var('q')
+    r = Var('r')
+    exp = Impl(Impl(p, q), r)
+    not_p_or_q_or_r = Disj(Disj(Nega(p), q), r)
+    return equivalent(exp, not_p_or_q_or_r)
+
+def test8_enhanced():
+    x = Var('x')
+    y = Var('y')
+    z = Var('z')
+    exp = Disj(Conj(x, Disj(Nega(y), z)), Conj(Nega(x), Nega(y)))
+    return satisfiable(exp)
+
+def test9_enhanced():
+    a = Var('a')
+    b = Var('b')
+    exp = Nega(Nega(Conj(a, Nega(b))))
+    return equivalent(exp, Conj(a, Nega(b)))
+
+def test10_enhanced():
+    p = Var('p')
+    q = Var('q')
+    exp = Conj(Conj(p, Nega(p)), Conj(q, Nega(q)))
+    return satisfiable(exp) 
 
 if __name__ == "__main__":
-    print("Test 1")
-    print(test1())
-    # TODO: Add some more test cases
+    print("Test 1 (Should be true):", test1())
+    print("Test 2 (Should be true):", test2())
+    print("Test 3 (Should be true):", test3())
+    print("Test 4 (Should be true):", test4())
+    print("Test 5 (Should be false):", test5())
+    print("Test 6 (Should be true):", test6())
+    print("Test 7 (Should be true):", test7())
+    print("Test 8 (Should be 'y': True, 'x': True):", test8())
+    print("Test 9 (Should be true):", test9())
+    print("Test 10 (Should be false):", test10())
+    print("Enhanced Test 6 (Should be true):", test6_enhanced())
+    print("Enhanced Test 7 (Should be false):", test7_enhanced())
+    print("Enhanced Test 8 (Should be true):", test8_enhanced())
+    print("Enhanced Test 9 (Should be true):", test9_enhanced())
+    print("Enhanced Test 10 (Should be false):", test10_enhanced())
