@@ -273,12 +273,12 @@ def test10():
     exp = Conj(p, not_p)
     return satisfiable(exp)
 
-def test6_enhanced():
+def test11():
     x = Var('x')
     exp = Nega(Nega(Nega(Nega(x))))
     return equivalent(exp, x)
 
-def test7_enhanced():
+def test12():
     p = Var('p')
     q = Var('q')
     r = Var('r')
@@ -286,20 +286,20 @@ def test7_enhanced():
     not_p_or_q_or_r = Disj(Disj(Nega(p), q), r)
     return equivalent(exp, not_p_or_q_or_r)
 
-def test8_enhanced():
+def test13():
     x = Var('x')
     y = Var('y')
     z = Var('z')
     exp = Disj(Conj(x, Disj(Nega(y), z)), Conj(Nega(x), Nega(y)))
     return satisfiable(exp)
 
-def test9_enhanced():
+def test14():
     a = Var('a')
     b = Var('b')
     exp = Nega(Nega(Conj(a, Nega(b))))
     return equivalent(exp, Conj(a, Nega(b)))
 
-def test10_enhanced():
+def test15():
     p = Var('p')
     q = Var('q')
     exp = Conj(Conj(p, Nega(p)), Conj(q, Nega(q)))
@@ -316,8 +316,8 @@ if __name__ == "__main__":
     print("Test 8 (Should be 'y': True, 'x': True):", test8())
     print("Test 9 (Should be true):", test9())
     print("Test 10 (Should be false):", test10())
-    print("Enhanced Test 6 (Should be true):", test6_enhanced())
-    print("Enhanced Test 7 (Should be false):", test7_enhanced())
-    print("Enhanced Test 8 (Should be true):", test8_enhanced())
-    print("Enhanced Test 9 (Should be true):", test9_enhanced())
-    print("Enhanced Test 10 (Should be false):", test10_enhanced())
+    print("Test 11 (Should be true):", test11())
+    print("Test 12 (Should be false):", test12())
+    print("Test 13 (Should be {'z': True, 'y': True, 'x': True}):", test13())
+    print("Test 14 (Should be true):", test14())
+    print("Test 15 (Should be false):", test15())
