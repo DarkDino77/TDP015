@@ -42,21 +42,14 @@ import random
 # To convert an integer into a byte array, use
 # https://docs.python.org/3/library/stdtypes.html#int.to_bytes
 
-# def text2ints(text, m=2):  # Default block size set to 2 for example
-#     """Encode a string into a list of integers based on block size."""
-#     if m == 0:
-#         m = 1
-#     bytes_text = text.encode('utf-8')
-#     if len(bytes_text) % m != 0:
-#         bytes_text += b'\x00' * (m - len(bytes_text) % m)  # Pad with zero bytes
-#     return [int.from_bytes(bytes_text[i:i+m], byteorder='big') for i in range(0, len(bytes_text), m)]
-
-# def ints2text(ints, m=2):  # Ensure block size matches the encoding
-#     """Decode a list of integers into a string."""
-#     return ''.join((int.to_bytes(i, m, byteorder='big')).decode('utf-8').rstrip('\x00') for i in ints)
+def calculate_max_block_size(n):
+    b = 0  
+    while pow(2, 8 * b) - 1 < n:
+        b += 1
+    return b - 1 
 
 
-def text2ints(text, m=2):
+def text2ints(text, m=1):
     """Encode a string into a list of integers.
 
     Args:
@@ -67,10 +60,14 @@ def text2ints(text, m=2):
         A list of integers.
     """
 
-    byte_text = text.encode(encoding='utf-8')
-    num_zero_bytes = m - len(byte_text) % m # m = 3, "hejsansa" -> "hejsansa0"
-    byte_text += b'\x00' * num_zero_bytes
+    m = calculate_max_block_size(m)
 
+    byte_text = text.encode(encoding='utf-8')
+    num_zero_bytes = m - len(byte_text) % m 
+    if num_zero_bytes != m:
+        byte_text += b'\x00' * num_zero_bytes
+        
+    
     encoded_text = []
 
     for i in range(0,len(byte_text),m):
@@ -78,11 +75,8 @@ def text2ints(text, m=2):
 
     return encoded_text
 
-print(text2ints("test", 4))
-    
 
-
-def ints2text(ints, m=2):
+def ints2text(ints, m=1):
     """Decode a list of integers into a string.
 
     Args:
@@ -93,13 +87,13 @@ def ints2text(ints, m=2):
         A string.
 
     """
+    m = calculate_max_block_size(m)
+    print(m)
     output_string = ""
     for i in ints:
-        output_string += (int.to_bytes(i, m, byteorder='big')).decode(encoding='utf-8')
-
+        output_string += (int.to_bytes(i, m, byteorder='big')).decode(encoding='utf-8').rstrip('\x00')
     return  output_string
-
-print(ints2text(text2ints("test"), 4))
+#funkar ej för å,ä,ö
 
 
 # ## Problem 2
@@ -133,7 +127,6 @@ def xgcd(a, b):
 
     """
 
-
     old_g, g = a, b
     old_x, x = 1, 0
     old_y, y = 0, 1
@@ -147,8 +140,6 @@ def xgcd(a, b):
     
     return old_g, old_x, old_y
 
-
-print(xgcd(17,13))
 
 def gcd(a, b):
     """Computes the greatest common divisor (gcd) of the specified
@@ -165,7 +156,7 @@ def gcd(a, b):
     
     return xgcd(a, b)[0]
 
-print(gcd(17,13))
+# print(gcd(17,13))
 
 # ## Problem 3
 #
@@ -251,10 +242,14 @@ def encrypt(pubkey, plaintext):
         A ciphertext message (a list of integers).
 
     """
-    
-    
 
-    return []
+    encoded_text = text2ints(plaintext,pubkey[1])
+    encrypted_text = []
+    for i in encoded_text:
+        encrypted_text.append(pow(i,pubkey[0]) % pubkey[1])
+
+    return encrypted_text
+
 
 
 def decrypt(seckey, ciphertext):
@@ -268,8 +263,16 @@ def decrypt(seckey, ciphertext):
         A plaintext message (a string).
 
     """
-    # TODO: Replace the following line with your own code
-    return ""
+    
+    decrypted_list = []
+
+
+    for i in ciphertext:
+        decrypted_list.append(pow(i,seckey[0]) % seckey[1])
+
+    decrypted_text = ints2text(decrypted_list,seckey[1])
+    
+    return decrypted_text
 
 
 # To test your implementation, you can use the following code, which
@@ -287,6 +290,9 @@ if __name__ == "__main__":
     print(" ".join(map(lambda x: str(x), encrypted_msg)))
     print("The decrypted message is: ", end="")
     print(decrypt(seckey, encrypted_msg))
+    
+    # givna medelandet    
+    print(decrypt((91307, 268483), [259114, 14038, 13667, 74062, 148955, 50062,36907,18603,93303,170481,7991]))
 
 # As a further test, we have generated a ciphertext for you. With a
 # working implementation, you should be able to decode that ciphertext
