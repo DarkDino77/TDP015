@@ -43,11 +43,15 @@ import random
 # https://docs.python.org/3/library/stdtypes.html#int.to_bytes
 
 def calculate_max_block_size(n):
-    b = 0  
+    print("N:")
+    print(n)
+    if n < 65536:
+        return 1
+    b = 0
     while pow(2, 8 * b) - 1 < n:
         b += 1
-    return b - 1 
 
+    return b-1
 
 def text2ints(text, m=1):
     """Encode a string into a list of integers.
@@ -61,6 +65,8 @@ def text2ints(text, m=1):
     """
 
     m = calculate_max_block_size(m)
+    print("M:",m)
+
 
     byte_text = text.encode(encoding='utf-8')
     num_zero_bytes = m - len(byte_text) % m 
@@ -69,10 +75,11 @@ def text2ints(text, m=1):
         
     
     encoded_text = []
-
+    print("len(byte_text)",len(byte_text))
     for i in range(0,len(byte_text),m):
+        print("byte_text[i:i+m]",byte_text[i:i+m])
         encoded_text.append(int.from_bytes(byte_text[i:i+m], byteorder='big'))
-
+    print("encoded_text",encoded_text)
     return encoded_text
 
 
@@ -90,8 +97,17 @@ def ints2text(ints, m=1):
     m = calculate_max_block_size(m)
     print(m)
     output_string = ""
+    print("ints",ints)
     for i in ints:
+        print("i", i)
+        print("(int.to_bytes(i, m, byteorder='big')).decode(encoding='utf-8').rstrip('\x00')",(int.to_bytes(i, m, byteorder='big')).decode(encoding='utf-8').rstrip('\x00'))
+
+        print("(int.to_bytes(i, m, byteorder='big')).decode(encoding='utf-8')",(int.to_bytes(i, m, byteorder='big')).decode(encoding='utf-8'))
+
+        print("(int.to_bytes(i, m, byteorder='big'))",(int.to_bytes(i, m, byteorder='big')))
+
         output_string += (int.to_bytes(i, m, byteorder='big')).decode(encoding='utf-8').rstrip('\x00')
+    print("output_string",output_string)
     return  output_string
 #funkar ej för å,ä,ö
 
@@ -248,6 +264,7 @@ def encrypt(pubkey, plaintext):
     for i in encoded_text:
         encrypted_text.append(pow(i,pubkey[0]) % pubkey[1])
 
+    print("encrypted_text: ", encrypted_text)
     return encrypted_text
 
 
@@ -292,7 +309,7 @@ if __name__ == "__main__":
     print(decrypt(seckey, encrypted_msg))
     
     # givna medelandet    
-    print(decrypt((91307, 268483), [259114, 14038, 13667, 74062, 148955, 50062,36907,18603,93303,170481,7991]))
+    #print(decrypt((91307, 268483), [259114, 14038, 13667, 74062, 148955, 50062,36907,18603,93303,170481,7991]))
 
 # As a further test, we have generated a ciphertext for you. With a
 # working implementation, you should be able to decode that ciphertext
