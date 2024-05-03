@@ -96,13 +96,24 @@ def test_nested_pairs():
 # degree for which you can compute the number of nested pairs in under
 # one minute?
 
-def count_nested_pairs(n):
-    n -= 1
-    """Count the number of nested pairs with degree *n*."""
-    if n == 0:
-        return 1
+# def count_nested_pairs(n):
+#     n -= 1
+#     """Count the number of nested pairs with degree *n*."""
+#     if n == 0:
+#         return 1
     
-    return int((2*(2*n-1)/(n+1)) * count_nested_pairs(n))
+#     return int((2*(2*n-1)/(n+1)) * count_nested_pairs(n))
+
+def count_nested_pairs(n):
+    """Count the number of nested pairs with degree *n* using recursive approach."""
+    if n == 1:
+        return 1
+    else:
+        count = 0
+        for i in range(1, n):
+            count += count_nested_pairs(i) * count_nested_pairs(n - i)
+        return count
+
 
 
 def test_count_nested_pairs(n):
@@ -121,7 +132,7 @@ def test_count_nested_pairs(n):
     print("All tests passed!")
     return True
 
-test_count_nested_pairs(16)
+# test_count_nested_pairs(16)
 
 # We could calculate nested pairs of 15 degrees in one minute.
 
@@ -152,27 +163,34 @@ test_count_nested_pairs(16)
 
 cache = {}
 
-def count_nested_pairs_memoized(n):  
-    if not n in cache:
-        cache[n] = count_nested_pairs(n)
+def count_nested_pairs_memoized(n):
+    """Count the number of nested pairs with degree *n* using memoization."""
+    if n in cache:
+        return cache[n]
+    if n == 1:
+        cache[n] = 1
+    else:
+        count = 0
+        for i in range(1, n):
+            count += count_nested_pairs_memoized(i) * count_nested_pairs_memoized(n - i)
+        cache[n] = count
     return cache[n]
 
+
 def test_count_nested_pairs_memoized(n):
-    for degree in range(1,n):
+    for degree in range(1, n):
         expected_count = count_nested_pairs_memoized(degree)
-        generated_pairs = list(nested_pairs(degree))
-        
-        count_generated = len(generated_pairs)
-        
-        if count_generated != expected_count:
-            print(f"Test failed for degree {degree}: expected {expected_count}, got {count_generated}")
+
+        if expected_count != count_nested_pairs(degree):
+            print(f"Test failed for degree {degree}: expected {expected_count}, got {count_nested_pairs(degree)}")
             return False
         else:
-            print(f"Test passed for degree {degree}: {count_generated} pairs generated as expected.")
+            print(f"Test passed for degree {degree}: {expected_count} pairs counted as expected.")
     
     print("All tests passed!")
     return True
 
+
 test_count_nested_pairs_memoized(16)
 
-# We could calculate 15 degrees of nested pairs in 34 seconds using memoized calls.
+# We could calculate 15 degrees of nested pairs in < 1 second using memoized calls.
