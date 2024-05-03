@@ -127,39 +127,16 @@ def train(data):
             pp[digit][pixel_counter] += pixel
             ps[digit] += pixel
             pixel_counter += 1
-            
-    # # Calculate the probability of a pixel being black given a specific number
-    # for digit, pixel_amount in pp.items():
-    #     for pixel_counter, p in pixel_amount.items():
 
-    #         # P(b|7) = ( P(7|b)P(b) / P(7) )
-
-    #         p_b_given_digit = (ps[digit]+28*28)/(pd[digit]*28*28)
-    #         p_b = pp[digit][pixel_counter]/(pd[digit]*28*28)
-    #         # for i in range(0,10):
-    #         #     p_b += pd[i]/num_digits * ps[i]*pd[i]*28*28
-    #         p_digit = pd[digit]/num_digits
-
-    #         p = ((p_b_given_digit * p_digit) / p_b)
-    #         # print("debug ps:", ps[digit]+28*28, "/", pd[digit]*28*28)
-    #         # p = ((p * ((ps[digit]+28*28)/(pd[digit]*28*28))) / ((pd[digit]/num_digits)))
-    #         pp[digit][pixel_counter] = p
-
-
-    print(pp)
     for digit, pixels in pp.items():
-        total_images = pd[digit] + 1  
         for pixel_index in range(784):
-            pixels[pixel_index] = pixels[pixel_index] / (total_images)
-        print(total_images*784)
+            pixels[pixel_index] = pixels[pixel_index] / (ps[digit]+784)
 
     # Calculate probability of a given number
     for digit, prob in pd.items():
         prob = prob / num_digits
         pd[digit] = prob
 
-    print(pd[7])
-    print(pp[7][0])
     return pd, pp
 
 
@@ -180,51 +157,26 @@ def train(data):
 # `math.log`) and add probabilities instead of multiplying them.
 
 
-# def predict(model, image):
-#     """Predict the digit depicted by an image.
-
-#     Args:
-#         model: A pair of two dictionaries `pd`, `pp`, as decribed above.
-#         image: A tuple representing an image.
-
-#     Returns:
-#         The digit depicted by the image.
-#     """
-#     digit_image = 0
-#     pd = model[0]
-#     pp = model[1]
-#     points = [0] * 10
-
-#     for pixel_index , pixel in enumerate(image):
-#         current_max = [0,0]
-
-#         for digit in range(0,10):
-            
-#             if pp[digit][pixel_index] > current_max[1]:
-#                 current_max[0] = digit
-#                 current_max[1] = pp[digit][pixel_index]
-#         points[current_max[0]] += 1
-    
-
-#     digit_image = points.index(max(points))
-    
-#     return digit_image
-
-
 def predict(model, image):
+    """Predict the digit depicted by an image.
+
+    Args:
+        model: A pair of two dictionaries `pd`, `pp`, as decribed above.
+        image: A tuple representing an image.
+
+    Returns:
+        The digit depicted by the image.
+    """
     pd, pp = model
-    # print("pd:",pd)
     scores = [0]*10
+
     for i in range(0,10):
-        scores[i] = math.log(pd[i],10)
-        # print("pd[i]:",pd[i], ", log(i): ", math.log(pd[i],10))
-    # scores = [math.log(pd[digit]) for digit in range(10)]
-    # print(scores)
+        scores[i] = math.log(pd[i])
 
     for pixel_index, pixel in enumerate(image):
         if pixel == 1: 
             for digit in range(10):
-                scores[digit] += math.log(pp[digit][pixel_index],10)
+                scores[digit] += math.log(pp[digit][pixel_index])
     
     return scores.index(max(scores))
 
