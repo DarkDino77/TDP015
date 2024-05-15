@@ -114,9 +114,7 @@ def train(data):
     
     pp = {d: {p: 1 for p in range(784)} for d in range(10)}
 
-    ps = {d: 0 for d in range(10)}
-
-    num_digits = 0
+    num_digits = 10  # Halucinerande
     
     for image, digit in data:
         num_digits += 1
@@ -125,18 +123,19 @@ def train(data):
         pixel_counter = 0
         for pixel in image:
             pp[digit][pixel_counter] += pixel
-            ps[digit] += pixel
             pixel_counter += 1
-
-    for digit, pixels in pp.items():
-        for pixel_index in range(784):
-            pixels[pixel_index] = pixels[pixel_index] / (ps[digit]+784)
 
     # Calculate probability of a given number
     for digit, prob in pd.items():
         prob = prob / num_digits
         pd[digit] = prob
 
+    for digit, pixels in pp.items():
+        for pixel_index in range(784):
+            pixels[pixel_index] = pixels[pixel_index] / (pd[digit] * num_digits + 1)
+
+
+    print(pp[0][0])
     return pd, pp
 
 
@@ -174,9 +173,11 @@ def predict(model, image):
         scores[i] = math.log(pd[i])
 
     for pixel_index, pixel in enumerate(image):
-        if pixel == 1: 
-            for digit in range(10):
+        for digit in range(10):
+            if pixel == 1:
                 scores[digit] += math.log(pp[digit][pixel_index])
+            else:
+                scores[digit] += math.log(1 - pp[digit][pixel_index])
     
     return scores.index(max(scores))
 
